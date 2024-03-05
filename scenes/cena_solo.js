@@ -16,15 +16,14 @@ class cena_solo extends Phaser.Scene {
 			obj: null,
 		};
 
-		// Controles da rodada
+		// Controles da rodada. Aproveitado do exemplo do github
 		this.gameControls = {
 			over: false,
-			current_col_scored: false,
 			score: 0,
+			restartBt: null,
 		};
 	}
 
-	foguete;
 	preload() {
 		// Carrega elementos dentro do jogo
 		this.load.image('bg', 'assets/mapa solo.png');
@@ -35,9 +34,17 @@ class cena_solo extends Phaser.Scene {
 			frameHeight: 75,
 		});
 		this.load.image('nuvem', 'assets/nuvem.png');
+
+		// Carrega mensagens personalizadas
+		this.load.image('bemVindo', 'assets/Bemvindo.png');
+		this.load.image('gameOver', 'assets/Gameover.png');
+		this.load.image('1pont', 'assets/1pont.png');
+		this.load.image('2pont', 'assets/2pont.png');
+		this.load.image('3pont', 'assets/3pont.png');
+		this.load.image('coment', 'assets/coment.png');
 	}
 
-	create() {
+	create() {		
 		// Cria o background
 		this.map = this.add.image(200, 325, 'bg').setScale(0.7).setOrigin(0.5, 0.5);
 
@@ -74,12 +81,13 @@ class cena_solo extends Phaser.Scene {
 		this.bird.anims.play('fly', true);
 		this.bird2.anims.play('fly', true);
 
-		// Cria a nuvem 
+		// Cria a nuvem
 		this.nuvem = this.physics.add.sprite(44, 100, 'nuvem').setScale(0.1);
-		this.nuvem.setVisible(true)
+		this.nuvem.setVisible(true);
 
 		// Permite que acessemos inputs do teclado
 		this.cursors = this.input.keyboard.createCursorKeys();
+		this.pointer = this.input.activePointer;
 
 		// Cria o placar do jogo
 		this.placar = this.add.text(
@@ -90,15 +98,47 @@ class cena_solo extends Phaser.Scene {
 		);
 		this.placar.setVisible(false);
 
+		this.physics.add.existing(this.bird);
+		this.physics.add.existing(this.bird2);
 		this.physics.add.existing(this.nuvem);
 
+		// Colisões
+		this.physics.add.overlap(
+			this.player.obj,
+			this.bird,
+			function () {
+				this.gameControls.over = true;
+			},
+			null,
+			this
+		);
+
+		this.physics.add.overlap(
+			this.player.obj,
+			this.bird2,
+			function () {
+				this.gameControls.over = true;
+			},
+			null,
+			this
+		);
+
+		this.physics.add.overlap(
+			this.player.obj,
+			this.nuvem,
+			function () {
+				this.nuvem.setVisible(false);
+			},
+			null,
+			this
+		);
 	}
 
 	update() {
 		// Controla a movimentação do pássaro "1"
 		if (this.bird.x <= 100) {
 			this.bird.setFlip(false, false);
-			this.bird.ida = true; 
+			this.bird.ida = true;
 		}
 
 		if (this.bird.x < 700 && this.bird.ida === true) {
@@ -107,7 +147,7 @@ class cena_solo extends Phaser.Scene {
 		}
 
 		if (this.bird.x >= 700) {
-			this.bird.setFlip(true, false); 
+			this.bird.setFlip(true, false);
 			this.bird.ida = false;
 		}
 
@@ -119,7 +159,7 @@ class cena_solo extends Phaser.Scene {
 		// Controla a movimentação do pássaro2
 		if (this.bird2.x <= 100) {
 			this.bird2.setFlip(false, false);
-			this.bird2.ida = true; 
+			this.bird2.ida = true;
 		}
 
 		if (this.bird2.x < 700 && this.bird2.ida === true) {
@@ -128,21 +168,21 @@ class cena_solo extends Phaser.Scene {
 		}
 
 		if (this.bird2.x >= 700) {
-			this.bird2.setFlip(true, false); 
+			this.bird2.setFlip(true, false);
 			this.bird2.ida = false;
 		}
 
 		if (this.bird2.x > 100 && this.bird2.ida == false) {
 			this.bird2.x -= 15;
-			this.bird2.y = 30 * Math.sin(0.03 * this.bird2.x) + 300; 
+			this.bird2.y = 30 * Math.sin(0.03 * this.bird2.x) + 300;
 		}
 
 		// Controla a movimentação do nuvem
 		if (this.nuvem.x <= 100) {
-			this.nuvem.setFlip(false, false); 
-			this.nuvem.ida = true; 
+			this.nuvem.setFlip(false, false);
+			this.nuvem.ida = true;
 		}
-		
+
 		if (this.nuvem.x < 700 && this.nuvem.ida === true) {
 			this.nuvem.x += 10;
 			this.nuvem.y = 5 * Math.sin(0.03 * this.nuvem.x) + 100;
@@ -155,22 +195,7 @@ class cena_solo extends Phaser.Scene {
 
 		if (this.nuvem.x > 100 && this.nuvem.ida == false) {
 			this.nuvem.x -= 10;
-			this.nuvem.y = 5 * Math.sin(0.03 * this.nuvem.x) + 100; 
-		}
-		
-		// Detecta se o jogador e o pássaro se tocaram. Usei pois não estava funcionando o "overlap"
-		if (Phaser.Geom.Intersects.RectangleToRectangle(this.player.obj.getBounds(), this.bird.getBounds())) {
-			this.gameControls.over = true;
-		}
-
-		// Detecta se o jogador e o pássaro 2 se tocaram
-		if (Phaser.Geom.Intersects.RectangleToRectangle(this.player.obj.getBounds(), this.bird2.getBounds())) {
-			this.gameControls.over = true;
-		}
-
-		// Detecta se a nuvem e o jogador se tocaram.
-		if (Phaser.Geom.Intersects.RectangleToRectangle(this.player.obj.getBounds(), this.nuvem.getBounds())) {
-			this.nuvem.setVisible(false);
+			this.nuvem.y = 5 * Math.sin(0.03 * this.nuvem.x) + 100;
 		}
 
 		// Cria a movimentação do foguete
@@ -188,8 +213,8 @@ class cena_solo extends Phaser.Scene {
 		// Determina posição do foguinho
 		this.fogo.obj.setPosition(this.player.obj.x, this.player.obj.y + 17);
 
-		if (this.player.obj.y <= 18){
-			this.scene.start('cena_espaço')
+		if (this.player.obj.y <= 18) {
+			this.scene.start('cena_espaço', { score: this.gameControls.score });
 		}
 	}
 

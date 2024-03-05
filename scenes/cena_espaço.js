@@ -16,25 +16,36 @@ class cena_espaço extends Phaser.Scene {
 			obj: null,
 		};
 
-		// Controles da rodada
+		// Controles da rodada. Aproveitado do exemplo no github
 		this.gameControls = {
 			over: false,
-			current_col_scored: false,
 			score: 0,
+			restartBt: null,
 		};
 	}
 
-	foguete;
 	preload() {
 		// Carrega elementos dentro do jogo
 		this.load.image('bg1', 'assets/mapa espaço.png');
 		this.load.image('fogo', 'assets/foguinho.png');
 		this.load.image('foguete', 'assets/foguete.png');
-        this.load.image('nave','assets/etezinho.png')
+		this.load.image('nave', 'assets/etezinho.png');
 		this.load.image('nuvem', 'assets/nuvem.png');
+
+		// Carrega mensagens personalizadas
+		this.load.image('final', 'assets/final.png');
+		this.load.image('gameOver', 'assets/Gameover.png');
+		this.load.image('restart', 'assets/reiniciar.png');
+		this.load.image('3pont', 'assets/3pont.png');
+		this.load.image('3pont', 'assets/3pont.png');
+		this.load.image('5pont', 'assets/5pont.png');
+		this.load.image('6pont', 'assets/6pont.png');
 	}
 
-	create() {
+	create(data) {
+        // recupera os dados da cena anterior
+        this.gameControls.score = data;
+
 		// Muda a gravidade do mapa
 		this.physics.world.gravity.y = 5;
 
@@ -43,6 +54,12 @@ class cena_espaço extends Phaser.Scene {
 			.image(200, 325, 'bg1')
 			.setScale(0.7)
 			.setOrigin(0.5, 0.5);
+
+		// Cria as mensagens
+		this.gameOver = this.add.image(200, 0, 'gameOver').setScale(0.3);
+		this.gameOver.setVisible(false);
+		this.gameControls.restartBt = this.add.image(200, 0, 'restart').setScale(0.3);
+		this.gameControls.restartBt.setVisible(false);
 
 		// Adiciona o efeito do fogo no código e esconde ele
 		this.fogo.obj = this.add.sprite(0, 0, 'fogo').setScale(0.3);
@@ -63,12 +80,11 @@ class cena_espaço extends Phaser.Scene {
 			this.map.height / 1.6
 		);
 
-		// Cria os pássaros e sua animação
-		this.nave = this.physics.add.sprite(44, 300, 'nave').setScale(0.15);
+		// Cria as naves
+		this.nave = this.physics.add.sprite(44, 300, 'nave').setScale(0.5);
 		this.nave.body.allowGravity = false;
-		this.bird2 = this.physics.add.sprite(700, 500, 'passaro').setScale(0.15);
-		this.bird2.body.allowGravity = false;
-
+		this.nave2 = this.physics.add.sprite(700, 500, 'nave').setScale(0.5);
+		this.nave2.body.allowGravity = false;
 
 		// Cria a nuvem
 		this.nuvem = this.physics.add.sprite(44, 100, 'nuvem').setScale(0.1);
@@ -76,25 +92,47 @@ class cena_espaço extends Phaser.Scene {
 
 		// Permite que acessemos inputs do teclado
 		this.cursors = this.input.keyboard.createCursorKeys();
+        this.pointer = this.input.activePointer;
 
-		// Cria o placar do jogo
-		this.placar = this.add.text(
-			this.player.obj.x - 35,
-			this.player.obj.y,
-			'Pontuação: ' + this.gameControls.score,
-			{ fontSize: '10px', fill: '#ffffff' }
-		);
-		this.placar.setVisible(false);
-
-		this.resultado = this.add.text(
-			this.player.obj.x - 35,
-			this.player.obj.y,
-			'Game over' + this.gameControls.score,
-			{ fontSize: '30px', fill: '#ffffff' }
-		);
-		this.resultado.setVisible(false);
-
+		this.physics.add.existing(this.nave);
+		this.physics.add.existing(this.nave2);
 		this.physics.add.existing(this.nuvem);
+
+		// Colisões
+		this.physics.add.overlap(
+			this.player.obj,
+			this.nave,
+			function () {
+				this.gameControls.over = true;
+			},
+			null,
+			this
+		);
+
+		this.physics.add.overlap(
+			this.player.obj,
+			this.nave2,
+			function () {
+				this.gameControls.over = true;
+			},
+			null,
+			this
+		);
+
+		this.physics.add.overlap(
+			this.player.obj,
+			this.nuvem,
+			function () {
+				this.nuvem.setVisible(false);
+			},
+			null,
+			this
+		);
+
+        // this.gameControls.restartBt.on('pointerdown', () => {
+        //     console.log("Foi")
+        //     this.scene.restart('cena_solo');
+        // });
 	}
 
 	update() {
@@ -120,24 +158,24 @@ class cena_espaço extends Phaser.Scene {
 		}
 
 		// Controla a movimentação do pássaro2
-		if (this.bird2.x <= 100) {
-			this.bird2.setFlip(false, false);
-			this.bird2.ida = true;
+		if (this.nave2.x <= 100) {
+			this.nave2.setFlip(false, false);
+			this.nave2.ida = true;
 		}
 
-		if (this.bird2.x < 700 && this.bird2.ida === true) {
-			this.bird2.x += 15;
-			this.bird2.y = 30 * Math.sin(0.03 * this.bird2.x) + 300;
+		if (this.nave2.x < 700 && this.nave2.ida === true) {
+			this.nave2.x += 20;
+			this.nave2.y = 30 * Math.sin(0.03 * this.nave2.x) + 300;
 		}
 
-		if (this.bird2.x >= 700) {
-			this.bird2.setFlip(true, false);
-			this.bird2.ida = false;
+		if (this.nave2.x >= 700) {
+			this.nave2.setFlip(true, false);
+			this.nave2.ida = false;
 		}
 
-		if (this.bird2.x > 100 && this.bird2.ida == false) {
-			this.bird2.x -= 15;
-			this.bird2.y = 30 * Math.sin(0.03 * this.bird2.x) + 300;
+		if (this.nave2.x > 100 && this.nave2.ida == false) {
+			this.nave2.x -= 20;
+			this.nave2.y = 30 * Math.sin(0.03 * this.nave2.x) + 300;
 		}
 
 		// Controla a movimentação do nuvem
@@ -147,7 +185,7 @@ class cena_espaço extends Phaser.Scene {
 		}
 
 		if (this.nuvem.x < 700 && this.nuvem.ida === true) {
-			this.nuvem.x += 10;
+			this.nuvem.x += 15;
 			this.nuvem.y = 5 * Math.sin(0.03 * this.nuvem.x) + 100;
 		}
 
@@ -157,38 +195,8 @@ class cena_espaço extends Phaser.Scene {
 		}
 
 		if (this.nuvem.x > 100 && this.nuvem.ida == false) {
-			this.nuvem.x -= 10;
+			this.nuvem.x -= 15;
 			this.nuvem.y = 5 * Math.sin(0.03 * this.nuvem.x) + 100;
-		}
-
-		// Detecta se o jogador e o pássaro se tocaram. Usei pois não estava funcionando o "overlap"
-		if (
-			Phaser.Geom.Intersects.RectangleToRectangle(
-				this.player.obj.getBounds(),
-				this.nave.getBounds()
-			)
-		) {
-			this.gameControls.over = true;
-		}
-
-		// Detecta se o jogador e o pássaro 2 se tocaram
-		if (
-			Phaser.Geom.Intersects.RectangleToRectangle(
-				this.player.obj.getBounds(),
-				this.bird2.getBounds()
-			)
-		) {
-			this.gameControls.over = true;
-		}
-
-		// Detecta se a nuvem e o jogador se tocaram.
-		if (
-			Phaser.Geom.Intersects.RectangleToRectangle(
-				this.player.obj.getBounds(),
-				this.nuvem.getBounds()
-			)
-		) {
-			this.nuvem.setVisible(false);
 		}
 
 		// Cria a movimentação do foguete
@@ -206,11 +214,13 @@ class cena_espaço extends Phaser.Scene {
 		// Determina posição do foguinho
 		this.fogo.obj.setPosition(this.player.obj.x, this.player.obj.y + 17);
 
-		if (this.player.obj.y <= 20) {
-			this.resultado.setText('Parabéns!');
-            this.resultado.setPosition(this.player.obj.x- 60, this.player.obj.y)
-			this.resultado.setVisible(true);
-            this.player.obj.setVisible(false);
+		if (this.gameControls.over) {
+            this.player.obj.destroy();
+			this.fogo.obj.destroy();
+			this.gameOver.setPosition(this.player.obj.x, this.player.obj.y);
+			this.gameOver.setVisible(true);
+			this.gameControls.restartBt.setPosition(this.player.obj.x, this.player.obj.y + 30);
+			this.gameControls.restartBt.setVisible(true);
 		}
 	}
 
