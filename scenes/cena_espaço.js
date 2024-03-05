@@ -147,7 +147,7 @@ class cena_espaço extends Phaser.Scene {
 			this.player.obj,
 			this.cometa,
 			function () {
-				this.cometa.setVisible(false);
+				this.gameControls.over = true;
 			},
 			null,
 			this
