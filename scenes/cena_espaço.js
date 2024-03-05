@@ -30,7 +30,7 @@ class cena_espaço extends Phaser.Scene {
 		this.load.image('fogo', 'assets/foguinho.png');
 		this.load.image('foguete', 'assets/foguete.png');
 		this.load.image('nave', 'assets/etezinho.png');
-		this.load.image('nuvem', 'assets/nuvem.png');
+		this.load.image('cometa', 'assets/cometa.png');
 
 		// Carrega mensagens personalizadas
 		this.load.image('final', 'assets/final.png');
@@ -110,9 +110,9 @@ class cena_espaço extends Phaser.Scene {
 		this.nave2 = this.physics.add.sprite(700, 500, 'nave').setScale(0.5);
 		this.nave2.body.allowGravity = false;
 
-		// Cria a nuvem
-		this.nuvem = this.physics.add.sprite(44, 100, 'nuvem').setScale(0.1);
-		this.nuvem.setVisible(true);
+		// Cria a cometa
+		this.cometa = this.physics.add.sprite(44, 100, 'cometa').setScale(0.1);
+		this.cometa.setVisible(true);
 
 		// Permite que acessemos inputs do teclado
 		this.cursors = this.input.keyboard.createCursorKeys();
@@ -120,7 +120,7 @@ class cena_espaço extends Phaser.Scene {
 
 		this.physics.add.existing(this.nave);
 		this.physics.add.existing(this.nave2);
-		this.physics.add.existing(this.nuvem);
+		this.physics.add.existing(this.cometa);
 
 		// Colisões
 		this.physics.add.overlap(
@@ -145,9 +145,9 @@ class cena_espaço extends Phaser.Scene {
 
 		this.physics.add.overlap(
 			this.player.obj,
-			this.nuvem,
+			this.cometa,
 			function () {
-				this.nuvem.setVisible(false);
+				this.cometa.setVisible(false);
 			},
 			null,
 			this
@@ -202,25 +202,22 @@ class cena_espaço extends Phaser.Scene {
 			this.nave2.y = 30 * Math.sin(0.03 * this.nave2.x) + 300;
 		}
 
-		// Controla a movimentação do nuvem
-		if (this.nuvem.x <= 100) {
-			this.nuvem.setFlip(false, false);
-			this.nuvem.ida = true;
+		// Controla a movimentação do cometa
+		if (this.cometa.x <= 100) {
+			this.cometa.ida = true;
 		}
 
-		if (this.nuvem.x < 700 && this.nuvem.ida === true) {
-			this.nuvem.x += 15;
-			this.nuvem.y = 5 * Math.sin(0.03 * this.nuvem.x) + 100;
+		if (this.cometa.x < 700 && this.cometa.ida === true) {
+			this.cometa.x += 25;
 		}
 
-		if (this.nuvem.x >= 700) {
-			this.nuvem.setFlip(true, false);
-			this.nuvem.ida = false;
+		if (this.cometa.x >= 700) {
+			this.cometa.setPosition(100, 100);
 		}
 
-		if (this.nuvem.x > 100 && this.nuvem.ida == false) {
-			this.nuvem.x -= 15;
-			this.nuvem.y = 5 * Math.sin(0.03 * this.nuvem.x) + 100;
+		if (this.cometa.x > 100 && this.cometa.ida == false) {
+			this.cometa.x -= 15;
+			this.cometa.y = 5 * Math.sin(0.03 * this.cometa.x) + 100;
 		}
 
 		// Cria a movimentação do foguete
@@ -255,9 +252,9 @@ class cena_espaço extends Phaser.Scene {
 		}
 
 		if (
-			this.player.obj.y < this.nuvem.y &&
+			this.player.obj.y < this.cometa.y &&
 			this.gameControls.score == 2 &&
-			this.nuvem.visible
+			this.cometa.visible
 		) {
 			this.gameControls.score += 1;
 			this.pont3.setPosition(this.player.obj.x, this.player.obj.y + 15);
@@ -289,6 +286,7 @@ class cena_espaço extends Phaser.Scene {
 		if (this.player.obj.y <= 50) {
 			this.final.setPosition(this.player.obj.x, this.player.obj.y);
 			this.final.setVisible(true);
+            this.player.obj.destroy();
 		}
 	}
 
