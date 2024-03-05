@@ -283,6 +283,7 @@ class cena_espaço extends Phaser.Scene {
 			}
 		}
 
+        // Tela de vitória
 		if (this.player.obj.y <= 50) {
 			this.final.setPosition(this.player.obj.x, this.player.obj.y);
 			this.final.setVisible(true);
