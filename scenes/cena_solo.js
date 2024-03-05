@@ -38,15 +38,38 @@ class cena_solo extends Phaser.Scene {
 		// Carrega mensagens personalizadas
 		this.load.image('bemVindo', 'assets/Bemvindo.png');
 		this.load.image('gameOver', 'assets/Gameover.png');
+		this.load.image('restart', 'assets/reiniciar.png');
 		this.load.image('1pont', 'assets/1pont.png');
 		this.load.image('2pont', 'assets/2pont.png');
 		this.load.image('3pont', 'assets/3pont.png');
 		this.load.image('coment', 'assets/coment.png');
 	}
 
-	create() {		
+	create() {
 		// Cria o background
 		this.map = this.add.image(200, 325, 'bg').setScale(0.7).setOrigin(0.5, 0.5);
+
+		// Cria as mensagens
+		this.gameOver = this.add.image(200, 0, 'gameOver').setScale(0.3);
+		this.gameOver.setVisible(false);
+		this.coment = this.add.image(200,0,'coment').setScale(0.3).setVisible(false)
+		this.gameControls.restartBt = this.add
+			.image(200, 0, 'restart')
+			.setScale(0.3);
+		this.gameControls.restartBt.setVisible(false);
+		this.pont1 = this.add
+			.image(200, 0, '1pont')
+			.setScale(0.3)
+			.setVisible(false);
+		this.pont2 = this.add
+			.image(200, 0, '2pont')
+			.setScale(0.3)
+			.setVisible(false);
+		this.pont3 = this.add
+			.image(200, 0, '3pont')
+			.setScale(0.3)
+			.setVisible(false);
+		this.list = [this.pont1, this.pont2, this.pont3];
 
 		// Adiciona o efeito do fogo no código e esconde ele
 		this.fogo.obj = this.add.sprite(0, 0, 'fogo').setScale(0.3);
@@ -86,8 +109,8 @@ class cena_solo extends Phaser.Scene {
 		this.nuvem.setVisible(true);
 
 		// Permite que acessemos inputs do teclado
-		this.cursors = this.input.keyboard.createCursorKeys();
-		this.pointer = this.input.activePointer;
+		this.cursors = this.input.keyboard.createCursorKeys(); // Inputs de movimentação
+		this.keyR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R) // Input da tecla "R"
 
 		// Cria o placar do jogo
 		this.placar = this.add.text(
@@ -128,6 +151,11 @@ class cena_solo extends Phaser.Scene {
 			this.nuvem,
 			function () {
 				this.nuvem.setVisible(false);
+				this.coment.setPosition(this.player.obj.x, this.player.obj.y + 15);
+				this.coment.setVisible(true);
+				setTimeout(() => {
+					this.coment.destroy();
+				}, 1000);
 			},
 			null,
 			this
@@ -179,7 +207,6 @@ class cena_solo extends Phaser.Scene {
 
 		// Controla a movimentação do nuvem
 		if (this.nuvem.x <= 100) {
-			this.nuvem.setFlip(false, false);
 			this.nuvem.ida = true;
 		}
 
@@ -189,7 +216,6 @@ class cena_solo extends Phaser.Scene {
 		}
 
 		if (this.nuvem.x >= 700) {
-			this.nuvem.setFlip(true, false);
 			this.nuvem.ida = false;
 		}
 
@@ -213,8 +239,52 @@ class cena_solo extends Phaser.Scene {
 		// Determina posição do foguinho
 		this.fogo.obj.setPosition(this.player.obj.x, this.player.obj.y + 17);
 
+		// Determina pontuação e desencadeia uma reação
+		if (this.player.obj.y < this.bird.y && this.gameControls.score == 0) {
+			this.gameControls.score += 1;
+			this.pont1.setPosition(this.player.obj.x, this.player.obj.y + 15);
+			this.list[this.gameControls.score-1].setVisible(true);
+			setTimeout(() => {
+				this.pont1.destroy();
+			}, 1000);
+		}
+
+		if (this.player.obj.y < this.bird2.y && this.gameControls.score == 1) {
+			this.gameControls.score += 1;
+			this.pont2.setPosition(this.player.obj.x, this.player.obj.y + 15);
+			this.list[this.gameControls.score-1].setVisible(true);
+			setTimeout(() => {
+				this.pont2.destroy();
+			}, 1000);
+		}
+
+		if (this.player.obj.y < this.nuvem.y && this.gameControls.score == 2 && this.nuvem.visible) {
+			this.gameControls.score += 1;
+			this.pont3.setPosition(this.player.obj.x, this.player.obj.y + 15);
+			this.list[this.gameControls.score-1].setVisible(true);
+			setTimeout(() => {
+				this.pont3.destroy();
+			}, 1000);
+		}
+
 		if (this.player.obj.y <= 18) {
 			this.scene.start('cena_espaço', { score: this.gameControls.score });
+		}
+
+		if (this.gameControls.over) {
+			this.player.obj.destroy();
+			this.fogo.obj.destroy();
+			this.gameOver.setPosition(this.player.obj.x, this.player.obj.y);
+			this.gameOver.setVisible(true);
+			this.gameControls.restartBt.setPosition(
+				this.player.obj.x,
+				this.player.obj.y + 30
+			);
+			this.gameControls.restartBt.setVisible(true);
+
+			if (this.keyR.isDown) {
+				this.scene.restart()
+			}
 		}
 	}
 

@@ -43,8 +43,8 @@ class cena_espaço extends Phaser.Scene {
 	}
 
 	create(data) {
-        // recupera os dados da cena anterior
-        this.gameControls.score = data;
+		// recupera os dados da cena anterior
+		this.gameControls.score = data;
 
 		// Muda a gravidade do mapa
 		this.physics.world.gravity.y = 5;
@@ -58,8 +58,28 @@ class cena_espaço extends Phaser.Scene {
 		// Cria as mensagens
 		this.gameOver = this.add.image(200, 0, 'gameOver').setScale(0.3);
 		this.gameOver.setVisible(false);
-		this.gameControls.restartBt = this.add.image(200, 0, 'restart').setScale(0.3);
+		this.gameControls.restartBt = this.add
+			.image(200, 0, 'restart')
+			.setScale(0.3);
 		this.gameControls.restartBt.setVisible(false);
+		this.pont3 = this.add
+			.image(200, 0, '3pont')
+			.setScale(0.3)
+			.setVisible(false);
+		this.pont4 = this.add
+			.image(200, 0, '4pont')
+			.setScale(0.3)
+			.setVisible(false);
+		this.pont5 = this.add
+			.image(200, 0, '5pont')
+			.setScale(0.3)
+			.setVisible(false);
+		this.pont6 = this.add
+			.image(200, 0, '6pont')
+			.setScale(0.3)
+			.setVisible(false);
+
+		this.list = [this.pont3, this.pont4, this.pont5, this.pont6];
 
 		// Adiciona o efeito do fogo no código e esconde ele
 		this.fogo.obj = this.add.sprite(0, 0, 'fogo').setScale(0.3);
@@ -92,7 +112,7 @@ class cena_espaço extends Phaser.Scene {
 
 		// Permite que acessemos inputs do teclado
 		this.cursors = this.input.keyboard.createCursorKeys();
-        this.pointer = this.input.activePointer;
+		this.keyR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R); // Input da tecla "R"
 
 		this.physics.add.existing(this.nave);
 		this.physics.add.existing(this.nave2);
@@ -129,10 +149,10 @@ class cena_espaço extends Phaser.Scene {
 			this
 		);
 
-        // this.gameControls.restartBt.on('pointerdown', () => {
-        //     console.log("Foi")
-        //     this.scene.restart('cena_solo');
-        // });
+		// this.gameControls.restartBt.on('pointerdown', () => {
+		//     console.log("Foi")
+		//     this.scene.restart('cena_solo');
+		// });
 	}
 
 	update() {
@@ -210,17 +230,56 @@ class cena_espaço extends Phaser.Scene {
 		} else {
 			this.semFoguinho(); // Remove o efeito de foguinho no foguete
 		}
+        console.log(this.gameControls.score)
+		// Determina pontuação e desencadeia uma reação
+		if (this.player.obj.y < this.nave.y && this.gameControls.score >= 2) {
+			this.gameControls.score += 1;
+			this.pont1.setPosition(this.player.obj.x, this.player.obj.y + 15);
+			this.list[this.gameControls.score - 3].setVisible(true);
+			setTimeout(() => {
+				this.list[this.gameControls.score - 3].setVisible(false);
+			}, 1000);
+		} 
+
+		if (this.player.obj.y < this.nave2.y && this.gameControls.score >= 3) {
+			this.gameControls.score += 1;
+			this.nave2.setPosition(this.player.obj.x, this.player.obj.y + 15);
+			this.list[this.gameControls.score - 1].setVisible(true);
+			setTimeout(() => {
+				this.pont2.destroy();
+			}, 1000);
+		}
+
+		if (
+			this.player.obj.y < this.nuvem.y &&
+			this.gameControls.score == 2 &&
+			this.nuvem.visible
+		) {
+			this.gameControls.score += 1;
+			this.pont3.setPosition(this.player.obj.x, this.player.obj.y + 15);
+			this.list[this.gameControls.score - 1].setVisible(true);
+			setTimeout(() => {
+				this.list[this.gameControls.score - 1].destroy();
+			}, 1000);
+		}
 
 		// Determina posição do foguinho
 		this.fogo.obj.setPosition(this.player.obj.x, this.player.obj.y + 17);
 
 		if (this.gameControls.over) {
-            this.player.obj.destroy();
+			this.player.obj.destroy();
 			this.fogo.obj.destroy();
 			this.gameOver.setPosition(this.player.obj.x, this.player.obj.y);
 			this.gameOver.setVisible(true);
-			this.gameControls.restartBt.setPosition(this.player.obj.x, this.player.obj.y + 30);
+			this.gameControls.restartBt.setPosition(
+				this.player.obj.x,
+				this.player.obj.y + 30
+			);
 			this.gameControls.restartBt.setVisible(true);
+
+			if (this.keyR.isDown) {
+				this.scene.start('cena_solo');
+			}
 		}
 	}
 

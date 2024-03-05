@@ -8,19 +8,21 @@
     <script src="scenes/cena_solo.js"></script>
     <script src="scenes/cena_espaço.js"></script>
 
-    
+
 
 </head>
 
 <body>
-
     <div id="game"></div>
 
     <script type="text/javascript">
+        do {
+            var resultado = window.confirm("Você deseja ver o jogo do foguete?")
+        } while (!resultado)
         /*Global variables definition*/
         const config = {
             type: Phaser.AUTO,
-        
+
             width: 400, //largura da tela do jogo
             height: 650, //altura da tela do jogo
             physics: {
