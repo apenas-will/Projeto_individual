@@ -58,6 +58,10 @@ class cena_espaço extends Phaser.Scene {
 		// Cria as mensagens
 		this.gameOver = this.add.image(200, 0, 'gameOver').setScale(0.3);
 		this.gameOver.setVisible(false);
+		this.final = this.add
+			.image(200, 0, 'final')
+			.setScale(0.3)
+			.setVisible(false);
 		this.gameControls.restartBt = this.add
 			.image(200, 0, 'restart')
 			.setScale(0.3);
@@ -230,7 +234,7 @@ class cena_espaço extends Phaser.Scene {
 		} else {
 			this.semFoguinho(); // Remove o efeito de foguinho no foguete
 		}
-        console.log(this.gameControls.score)
+		console.log(this.gameControls.score);
 		// Determina pontuação e desencadeia uma reação
 		if (this.player.obj.y < this.nave.y && this.gameControls.score >= 2) {
 			this.gameControls.score += 1;
@@ -239,7 +243,7 @@ class cena_espaço extends Phaser.Scene {
 			setTimeout(() => {
 				this.list[this.gameControls.score - 3].setVisible(false);
 			}, 1000);
-		} 
+		}
 
 		if (this.player.obj.y < this.nave2.y && this.gameControls.score >= 3) {
 			this.gameControls.score += 1;
@@ -280,6 +284,11 @@ class cena_espaço extends Phaser.Scene {
 			if (this.keyR.isDown) {
 				this.scene.start('cena_solo');
 			}
+		}
+
+		if (this.player.obj.y <= 50) {
+			this.final.setPosition(this.player.obj.x, this.player.obj.y);
+			this.final.setVisible(true);
 		}
 	}
 
